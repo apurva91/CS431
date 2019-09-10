@@ -5,6 +5,41 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.table.*;
 import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.List;
+
+class TableThread extends Thread {
+    public int mode;
+    public int row_number;
+    // public static int thread_number_count;
+    // int thread_number;
+    public int column_number;
+
+    TableThread(int mode, int row_number) {
+        this.mode = mode;
+        // this.thread_number = thread_number_count++;
+        this.row_number = row_number;
+    }
+
+    @Override
+    public void run() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (mode == 0) {
+                    UserInterface.updateTrafficData(row_number);
+                }
+                else if(mode==1) {
+                    UserInterface.updateCarData(row_number);
+                }
+                else if(mode==2){
+                    UserInterface.addEntry(row_number);
+                }
+                // System.out.println(String.format("Thread Number %d completed.", thread_number));
+            }
+        });
+    }
+}
 
 public class UserInterface extends JFrame implements ActionListener {
 
@@ -13,30 +48,40 @@ public class UserInterface extends JFrame implements ActionListener {
     JTable carTable;
     JTable trafficTable;
 
-    DefaultTableModel carTableModel;
-    DefaultTableModel trafficTableModel;
+    static DefaultTableModel carTableModel;
+    static DefaultTableModel trafficTableModel;
 
-    public void reDraw() {
-        carTableModel.setRowCount(0);
-        for (int i = 0; i < Main.cars.size(); i++) {
-            String[] data = new String[5];
-            data[0] = Main.cars.get(i).getId();
-            data[1] = Main.cars.get(i).getSource();
-            data[2] = Main.cars.get(i).getDestination();
-            data[3] = Main.cars.get(i).getStatus();
-            data[4] = Main.cars.get(i).getTime();
-            carTableModel.addRow(data);
-        }
-        carTableModel.fireTableDataChanged();
-
-        trafficTableModel.setRowCount(0);
-        for (int i = 0; i < Main.signals.length; i++) {
-            trafficTableModel.addRow(Main.signals[i].getData());
-        }
-        trafficTableModel.fireTableDataChanged();
+    public static void updateTrafficData(int i) {
+        String[] data = Main.signals[i].getData();
+        trafficTableModel.setValueAt(data[1], i, 1);
+        trafficTableModel.setValueAt(data[2], i, 2);
     }
 
-    private void addEntry(Car details) {
+    public static void updateCarData(int i) {
+        if (carTableModel.getValueAt(i, 3) == "Pass"){
+            Main.is_passed.set(i,true);
+            return;
+        }
+        carTableModel.setValueAt(Main.cars.get(i).getStatus(), i, 3);
+        carTableModel.setValueAt(Main.cars.get(i).getTime(), i, 4);
+    }
+
+    public void reDraw() {
+        List<TableThread> threads = new ArrayList<TableThread>();
+        for (int i = 0; i < Main.cars.size(); i++) {
+            if(Main.is_passed.get(i)) continue;
+            threads.add(new TableThread(1, i));
+        }
+        for (int i = 0; i < Main.signals.length; i++) {
+            threads.add(new TableThread(0, i));
+        }
+        for (int i = 0; i < threads.size(); i++) {
+            threads.get(i).start();
+        }
+    }
+
+    public static void addEntry(int i) {
+        Car details = Main.cars.get(i);
         String[] data = new String[5];
         data[0] = details.getId();
         data[1] = details.getSource();
@@ -44,16 +89,10 @@ public class UserInterface extends JFrame implements ActionListener {
         data[3] = details.getStatus();
         data[4] = details.getTime();
         carTableModel.addRow(data);
-        // carTable.setModel(carTableModel);
-        carTableModel.fireTableDataChanged();
-
     }
 
-    public void addEntry(TrafficSignal details) {
+    private void addEntry(TrafficSignal details) {
         trafficTableModel.addRow(details.getData());
-        // trafficTable.setModel(trafficTableModel);
-        trafficTableModel.fireTableDataChanged();
-
     }
 
     private void getCarJTable() {
@@ -70,7 +109,7 @@ public class UserInterface extends JFrame implements ActionListener {
     }
 
     private void getTrafficJTable() {
-        String[] colName = { "Traffic Light", "Status", "Time"};
+        String[] colName = { "Traffic Light", "Status", "Time" };
         if (trafficTable == null) {
             trafficTable = new JTable() {
                 public boolean isCellEditable(int nRow, int nCol) {
@@ -84,7 +123,7 @@ public class UserInterface extends JFrame implements ActionListener {
 
     UserInterface() {
 
-        setLayout(new GridLayout(3,0));
+        setLayout(new GridLayout(3, 0));
         r1 = new JRadioButton("South to East");
         r2 = new JRadioButton("West to South");
         r3 = new JRadioButton("East to West");
@@ -112,23 +151,27 @@ public class UserInterface extends JFrame implements ActionListener {
         JScrollPane sp1 = new JScrollPane(trafficTable);
         add(sp1);
         // pack();
-        
+
         JScrollPane sp2 = new JScrollPane(carTable);
         add(sp2);
         pack();
-
+        addEntry(Main.signals[0]);
+        addEntry(Main.signals[1]);
+        addEntry(Main.signals[2]);
         setTitle("Simulation");
-        // setLayout(null);// using no layout managers
-        setVisible(true);// making the frame visible
+        setVisible(true);
     }
 
     public void actionPerformed(ActionEvent e) {
         if (r1.isSelected()) {
-            addEntry(Main.add_new_car(0,"South", "East"));
+            TableThread thread = new TableThread(2,Main.add_new_car(0, "South", "East"));
+            thread.start();
         } else if (r2.isSelected()) {
-            addEntry(Main.add_new_car(1,"West", "South"));
+            TableThread thread = new TableThread(2,Main.add_new_car(1, "West", "South"));
+            thread.start();
         } else if (r3.isSelected()) {
-            addEntry(Main.add_new_car(2,"East", "West"));
+            TableThread thread = new TableThread(2,Main.add_new_car(2, "East", "West"));
+            thread.start();
         } else {
             JOptionPane.showMessageDialog(this, "Please Select a option to add a car.");
         }

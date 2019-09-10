@@ -6,8 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 class Constants {
-    public static final int crossing_time = 5;
-    public static final int time_per_signal = 10;
+    public static final int crossing_time = 6;
+    public static final int time_per_signal = 60;
     public static final int per_signal_car = Constants.time_per_signal / Constants.crossing_time;
 }
 
@@ -45,7 +45,6 @@ class Car {
         } else {
             if (time - Main.current_time <= Constants.crossing_time)
                 status = "Crossing";
-            // if (time == Main.current_time)
         }
     }
 
@@ -71,7 +70,7 @@ class TrafficSignal {
 
     String[] getData() {
         if (is_on()) {
-            String[] p = { id, "Green", String.valueOf(10 - (Main.current_time % Constants.time_per_signal)) };
+            String[] p = { id, "Green", String.valueOf(Constants.time_per_signal - (Main.current_time % Constants.time_per_signal)) };
             return p;
         } else {
             String[] p = { id, "Red", "--" };
@@ -87,6 +86,7 @@ class TrafficSignal {
 class Main {
 
     public static List<Car> cars = new ArrayList<Car>();
+    public static List<Boolean> is_passed = new ArrayList<Boolean>();
     public static int current_time = 0;
     public static int current_car_id = 1;
     public static int next[] = { 0, Constants.time_per_signal, Constants.time_per_signal * 2 };
@@ -116,12 +116,13 @@ class Main {
             next[type] = (next[type] / Constants.time_per_signal + 3) * Constants.time_per_signal;
         }
     }
-    public static Car add_new_car(int type, String source, String destination) {
+    public static int add_new_car(int type, String source, String destination) {
         int time = next[type]+5;
         updateNextTimeCar(type);
         Car new_car = new Car(time, type, source, destination);
         cars.add(new_car);
-        return new_car;
+        is_passed.add(false);
+        return Integer.parseInt(new_car.getId())-1;
     }
 
     public static int get_new_car_id() {
@@ -130,9 +131,7 @@ class Main {
 
     public static void main(String[] args) {
         UserInterface ui = new UserInterface();
-        ui.addEntry(signals[0]);
-        ui.addEntry(signals[1]);
-        ui.addEntry(signals[2]);
+
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -142,7 +141,6 @@ class Main {
                     cars.get(i).updateTime();
                 }
                 updateNextTime(currentSignal());
-                System.out.println(String.format("%d, %d, %d",next[0],next[1],next[2]));
                 ui.reDraw();
             }
         }, 0, 1000);
