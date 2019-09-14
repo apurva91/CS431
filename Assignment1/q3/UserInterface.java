@@ -1,4 +1,4 @@
-package q3;
+package assignment1.q3;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -8,38 +8,6 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-class TableThread extends Thread {
-    public int mode;
-    public int row_number;
-    // public static int thread_number_count;
-    // int thread_number;
-    public int column_number;
-
-    TableThread(int mode, int row_number) {
-        this.mode = mode;
-        // this.thread_number = thread_number_count++;
-        this.row_number = row_number;
-    }
-
-    @Override
-    public void run() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (mode == 0) {
-                    UserInterface.updateTrafficData(row_number);
-                }
-                else if(mode==1) {
-                    UserInterface.updateCarData(row_number);
-                }
-                else if(mode==2){
-                    UserInterface.addEntry(row_number);
-                }
-                // System.out.println(String.format("Thread Number %d completed.", thread_number));
-            }
-        });
-    }
-}
 
 public class UserInterface extends JFrame implements ActionListener {
 
@@ -59,7 +27,7 @@ public class UserInterface extends JFrame implements ActionListener {
 
     public static void updateCarData(int i) {
         if (carTableModel.getValueAt(i, 3) == "Pass"){
-            Main.is_passed.set(i,true);
+            Main.isPassed.set(i,true);
             return;
         }
         carTableModel.setValueAt(Main.cars.get(i).getStatus(), i, 3);
@@ -69,7 +37,7 @@ public class UserInterface extends JFrame implements ActionListener {
     public void reDraw() {
         List<TableThread> threads = new ArrayList<TableThread>();
         for (int i = 0; i < Main.cars.size(); i++) {
-            if(Main.is_passed.get(i)) continue;
+            if(Main.isPassed.get(i)) continue;
             threads.add(new TableThread(1, i));
         }
         for (int i = 0; i < Main.signals.length; i++) {
@@ -164,13 +132,13 @@ public class UserInterface extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (r1.isSelected()) {
-            TableThread thread = new TableThread(2,Main.add_new_car(0, "South", "East"));
+            TableThread thread = new TableThread(2,Main.addNewCar(0, "South", "East"));
             thread.start();
         } else if (r2.isSelected()) {
-            TableThread thread = new TableThread(2,Main.add_new_car(1, "West", "South"));
+            TableThread thread = new TableThread(2,Main.addNewCar(1, "West", "South"));
             thread.start();
         } else if (r3.isSelected()) {
-            TableThread thread = new TableThread(2,Main.add_new_car(2, "East", "West"));
+            TableThread thread = new TableThread(2,Main.addNewCar(2, "East", "West"));
             thread.start();
         } else {
             JOptionPane.showMessageDialog(this, "Please Select a option to add a car.");
