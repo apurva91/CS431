@@ -16,7 +16,8 @@ import java.awt.Image;
 public class UserInterface extends JFrame implements ActionListener {
 
     // The radio buttons for taking input from user.
-    JRadioButton radioButton1, radioButton2, radioButton3;
+    JRadioButton sourceRadioButton1, sourceRadioButton2, sourceRadioButton3, destinationRadioButton1,
+            destinationRadioButton2, destinationRadioButton3;
     // Submit button for letting the user submit their choice.
     JButton submitButton;
     // Two tables one for car and one for traffic.
@@ -49,7 +50,8 @@ public class UserInterface extends JFrame implements ActionListener {
     // cars as well as traffic signals.
     public static void reDraw() {
         // If the window is not yet initialized there is nothing to redraw.
-        if(!isInitialized) return;
+        if (!isInitialized)
+            return;
         // Updating Car Data. It only updates those which are either in Waiting or
         // Crossing state.
         for (int i = 0; i < Main.cars.size(); i++) {
@@ -145,24 +147,51 @@ public class UserInterface extends JFrame implements ActionListener {
         // table, showing cars table.
         setLayout(new GridLayout(3, 0));
 
-        // Create three radio buttons for selecting which road the new car is coming on.
-        radioButton1 = new JRadioButton("South to East");
-        radioButton2 = new JRadioButton("West to South");
-        radioButton3 = new JRadioButton("East to West");
+        // Create three radio buttons for selecting which direction the new car is
+        // coming from.
+        sourceRadioButton1 = new JRadioButton("South");
+        sourceRadioButton2 = new JRadioButton("West");
+        sourceRadioButton3 = new JRadioButton("East");
 
         // Create a button group for the radio buttons so that only one of them can be
         // selected at a time.
-        ButtonGroup radioGroup = new ButtonGroup();
-        radioGroup.add(radioButton1);
-        radioGroup.add(radioButton2);
-        radioGroup.add(radioButton3);
+        ButtonGroup sourceRadioGroup = new ButtonGroup();
+        sourceRadioGroup.add(sourceRadioButton1);
+        sourceRadioGroup.add(sourceRadioButton2);
+        sourceRadioGroup.add(sourceRadioButton3);
 
-        // Set font size for each of the radio button. As we will be using pack() later
-        // on position doesn't matter only height and width matters in setBounds(x axis,
-        // y axis, width, height).
-        radioButton1.setBounds(0, 0, 200, 30);
-        radioButton2.setBounds(0, 0, 200, 30);
-        radioButton3.setBounds(0, 0, 200, 30);
+        // Label to be displayed for the set of radio buttons.
+        JLabel sourceLabel = new JLabel("Source:");
+
+        // Create a panel and add all of the buttons and label to it..
+        JPanel sourceSelector = new JPanel();
+        sourceSelector.add(sourceLabel);
+        sourceSelector.add(sourceRadioButton1);
+        sourceSelector.add(sourceRadioButton2);
+        sourceSelector.add(sourceRadioButton3);
+
+        // Create three radio buttons for selecting which direction the new car is
+        // going to.
+        destinationRadioButton1 = new JRadioButton("South");
+        destinationRadioButton2 = new JRadioButton("West");
+        destinationRadioButton3 = new JRadioButton("East");
+
+        // Create a button group for the Radio buttons so that only one of them can be
+        // selected at a time.
+        ButtonGroup destinationRadioGroup = new ButtonGroup();
+        destinationRadioGroup.add(destinationRadioButton1);
+        destinationRadioGroup.add(destinationRadioButton2);
+        destinationRadioGroup.add(destinationRadioButton3);
+
+        // Label to be displayed for the set of radio buttons.
+        JLabel destinationLabel = new JLabel("Destination:");
+
+        // Create a panel and add all of the buttons and label to it..
+        JPanel destinationSelector = new JPanel();
+        destinationSelector.add(destinationLabel);
+        destinationSelector.add(destinationRadioButton1);
+        destinationSelector.add(destinationRadioButton2);
+        destinationSelector.add(destinationRadioButton3);
 
         // Create a button for submiting the user selection.
         JButton submitButton = new JButton("Add a new car");
@@ -171,12 +200,16 @@ public class UserInterface extends JFrame implements ActionListener {
         // Add a action listener on the button.
         submitButton.addActionListener(this);
 
-        JPanel selector = new JPanel();
-        selector.add(radioButton1);
-        selector.add(radioButton2);
-        selector.add(radioButton3);
-        selector.add(submitButton);
-        // Create a panel for adding the radio buttons and the submit button into it.
+        // Create a panel for holding the buttons.
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(submitButton);
+
+        // Create a panel for keeping all the panels into it.
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.add(sourceSelector);
+        inputPanel.add(destinationSelector);
+        inputPanel.add(buttonPanel);
 
         // Calling the function to create table of traffic signals.
         getTrafficJTable();
@@ -189,7 +222,7 @@ public class UserInterface extends JFrame implements ActionListener {
         JScrollPane scrollingPane2 = new JScrollPane(carTable);
 
         // Add all the panels to the Main Frame.
-        add(selector);
+        add(inputPanel);
         add(scrollingPane1);
         add(scrollingPane2);
         // Pack it all together
@@ -217,14 +250,20 @@ public class UserInterface extends JFrame implements ActionListener {
         // add the car using the addNewCar method in Main Class and then adding it to
         // the user interface using addEntry method. If none of the radio buttons were
         // selected display a popup telling select a option to add a car.
-        if (radioButton1.isSelected()) {
+        if (sourceRadioButton1.isSelected() && destinationRadioButton3.isSelected()) {
             addEntry(Main.addNewCar(0, "South", "East"));
-        } else if (radioButton2.isSelected()) {
+        } else if (sourceRadioButton2.isSelected() && destinationRadioButton1.isSelected()) {
             addEntry(Main.addNewCar(1, "West", "South"));
-        } else if (radioButton3.isSelected()) {
+        } else if (sourceRadioButton3.isSelected() && destinationRadioButton2.isSelected()) {
             addEntry(Main.addNewCar(2, "East", "West"));
+        } else if (sourceRadioButton1.isSelected() && destinationRadioButton2.isSelected()) {
+            addEntry(Main.addNewCar(3, "South", "West"));
+        } else if (sourceRadioButton2.isSelected() && destinationRadioButton3.isSelected()) {
+            addEntry(Main.addNewCar(4, "West", "East"));
+        } else if (sourceRadioButton3.isSelected() && destinationRadioButton1.isSelected()) {
+            addEntry(Main.addNewCar(5, "East", "South"));
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a option to add a car.");
+            JOptionPane.showMessageDialog(this, "Please select valid options to add a car.");
         }
     }
 

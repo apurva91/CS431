@@ -21,7 +21,7 @@ public class Main {
     public static int currentCarIndex = 1;
     // Array containing variable for each signal telling when the road will be open
     // for crossing again.
-    public static int next[] = { 0, Constants.TIME_PER_SIGNAL, Constants.TIME_PER_SIGNAL * 2 };
+    public static int next[] = { 0, Constants.TIME_PER_SIGNAL, Constants.TIME_PER_SIGNAL * 2 , 0,0,0};
     // Array containing the objects for each signal.
     public static TrafficSignal signals[] = { new TrafficSignal("T1"), new TrafficSignal("T2"), new TrafficSignal("T3") };
 
@@ -69,13 +69,30 @@ public class Main {
         }
     }
 
+    // Handles updating the time for the cars which need not wait for signal.
+    public static void updateNextTimeCarDirect(int signal){
+        if(next[signal]<currentTime){
+            next[signal]=currentTime+Constants.CROSSING_TIME;
+        }
+        else{
+            next[signal]=next[signal]+Constants.CROSSING_TIME;
+        }
+    }
+
     // Adds new car in the List, Updates the next time, returns the index of the car
     // in the list.
     public static int addNewCar(int type, String source, String destination) {
         // Time at which the car will cross the road.
         int time = next[type] + Constants.CROSSING_TIME;
+        
         // Update the next time for the current signal.
-        updateNextTimeCar(type);
+        if(type>=3){
+            updateNextTimeCarDirect(type);
+            time = next[type];
+        }
+        else{
+            updateNextTimeCar(type);
+        }
         // Create a new Car object.
         Car new_car = new Car(time, type, source, destination);
         // Add it in the list.
