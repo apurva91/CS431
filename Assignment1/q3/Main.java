@@ -129,12 +129,6 @@ public class Main {
             public void run() {
                 // increment the current time.
                 currentTime++;
-                // Update the status for all the cars which have not passed yet.
-                for (int i = 0; i < cars.size(); i++) {
-                    if (isPassed.get(i))
-                        continue;
-                    cars.get(i).updateStatus();
-                }
                 // Update next time for the current signal.
                 updateNextTime(currentSignal());
                 // Refresh the user interface by updating all values in the tables.

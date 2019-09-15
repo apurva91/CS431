@@ -34,10 +34,12 @@ public class UserInterface extends JFrame implements ActionListener {
         trafficTableModel.setValueAt(data[2], i, 2);
     }
 
+    // Update the car status according to current time.
     // For a row number i, it sets the new value for cells updates time and status.
     // Once the status is pass it sets a boolean corresponding to the row to be
     // true, so it wont be updated next time.
     public static void updateCarData(int i) {
+        Main.cars.get(i).updateStatus();
         if (carTableModel.getValueAt(i, 3) == "Pass") {
             Main.isPassed.set(i, true);
             return;
