@@ -55,11 +55,15 @@ edge(X,Y):- weights(X,Y,_).
 undirected_edge(X,Y):- weights(X,Y,_).
 undirected_edge(X,Y):- weights(Y,X,_).
 
-% Global Variables for storing the best weight and best paths.
+get_weight(X,Y,Z):- weights(X,Y,Z).
+get_weight(Y,X,Z):- weights(X,Y,Z).
+
+
+% Global Variables for storing the best weight, best paths and a visited_array.
 :-dynamic(best_weight/1).
 :-dynamic(best_paths/1).
 best_weight(999999).
-
+:-dynamic(visited/1).
 
 % Function for checking if a given list is empty or not.
 is_empty([]).
@@ -100,6 +104,7 @@ print_path(Prefix,[H|T]):-
 	format("~w~w -> ",[Prefix,H]),
 	print_path("",T).
 
+
 % Given Y as the maximum Sum observed till now and Sum is the current Path's sum.
 % 	If Y > Sum update Y to sum and delete all previous paths store the current path.
 %	If Y == Sum add current Path to best_paths.
@@ -123,26 +128,46 @@ update(Y,Sum,Path):-
 
 dfs_util(_,Sum,_):-
 	best_weight(Y),
-	Sum >= Y.
+	Sum >= Y,
+	fail.
 
 dfs_util(C,Sum,Path):-
 	end(C),
 	append(Path,[C],NewPath),	
 	best_weight(Y),
-	update(Y,Sum,NewPath).
+	update(Y,Sum,NewPath),
+	fail.
 
+
+% This is using undirected edges.
+dfs_util(C,Sum,Path):-
+	append(Path,[C],NewPath),
+	undirected_edge(C, R),
+	get_weight(C,R,Y),
+	\+ visited(R),
+	asserta(visited(R)),
+	NewSum is Sum+Y,	
+	\+ dfs_util(R,NewSum,NewPath),
+	retract(visited(R)),
+	fail.
+
+/*
+%This is for using directed edges directly.
 dfs_util(C,Sum,Path):-
 	append(Path,[C],NewPath),
 	edge(C, R),
 	weights(C,R,Y),
 	NewSum is Sum+Y,	
-	dfs_util(R,NewSum,NewPath),
+	\+ dfs_util(R,NewSum,NewPath),
 	fail.
+*/
 
 % start dfs function from all possible starting locations. 
 dfs:-
 	start(C),	
-	dfs_util(C,0,[]),
+	asserta(visited(C)),
+	\+ dfs_util(C,0,[]),
+	retract(visited(C)),
 	fail.
 
 % print_paths prints all of the best paths using best_paths function.
