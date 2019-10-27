@@ -71,9 +71,9 @@ valid_find_hungry(X,Y,Z):-
 ),false().
 
 % printing valid not so hungry combination
-valid_not_so_hungry(X,Y,Z):-
-    (   X=:=1, starter(D,A),main(E,B),write("Items: "), write(D),write(", "),write(E),nl;
-        Z=:=1, main(D,A), dessert(E,B),write("Items: "),write(D),write(", "),write(E),nl
+valid_find_not_so_hungry(X,Y,Z):-
+    (   X=:=1, starter(D,A),main(E,B),A+B=<80,write("Items: "), write(D),write(", "),write(E),nl;
+        Z=:=1, main(D,A), dessert(E,B),A+B=<80,write("Items: "),write(D),write(", "),write(E),nl
 ),false().
 
 % initializing values for finding combinations of meal
@@ -99,16 +99,3 @@ find_items(Status,X,Y,Z) :-
      Status = 'hungry' -> find_hungry(X,Y,Z);
      Status = 'not_so_hungry' -> find_not_so_hungry(X,Y,Z)
  ).
-
-
-
-
-
-
-
-
-
-
-
-
-
