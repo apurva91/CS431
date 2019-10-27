@@ -85,10 +85,12 @@ valid(List):-
 	[H|_] = List,
 	start(H),
 	check_path(List),
-	write("Path Found").
+	write("Path Found"),
+	!.
 
 valid(_):-
-	write("Path Not Found").
+	write("Path Not Found"),
+	fail.
 
 % print_path is used to print a given list containing vertices with arrows in middle of them.
 print_path(_,[]).
