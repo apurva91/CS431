@@ -104,6 +104,30 @@ print_path(Prefix,[H|T]):-
 	format("~w~w -> ",[Prefix,H]),
 	print_path("",T).
 
+paths_util(C,Path):-
+	end(C),
+	append(Path,[C],NewPath),
+	print_path("",NewPath),
+	fail.
+
+paths_util(C,Path):-
+	\+ end(C),
+	append(Path,[C],NewPath),
+	undirected_edge(C, R),
+	\+ visited(R),
+	asserta(visited(R)),	
+	\+ paths_util(R,NewPath),
+	retract(visited(R)),
+	fail.
+
+paths():-
+	start(C),
+	asserta(visited(C)),
+	\+ paths_util(C,[]),
+	retract(visited(C)),
+	fail.
+
+
 
 % Given Y as the maximum Sum observed till now and Sum is the current Path's sum.
 % 	If Y > Sum update Y to sum and delete all previous paths store the current path.
@@ -141,6 +165,7 @@ dfs_util(C,Sum,Path):-
 
 % This is using undirected edges.
 dfs_util(C,Sum,Path):-
+	\+ end(C),	
 	append(Path,[C],NewPath),
 	undirected_edge(C, R),
 	get_weight(C,R,Y),
@@ -150,17 +175,6 @@ dfs_util(C,Sum,Path):-
 	\+ dfs_util(R,NewSum,NewPath),
 	retract(visited(R)),
 	fail.
-
-/*
-%This is for using directed edges directly.
-dfs_util(C,Sum,Path):-
-	append(Path,[C],NewPath),
-	edge(C, R),
-	weights(C,R,Y),
-	NewSum is Sum+Y,	
-	\+ dfs_util(R,NewSum,NewPath),
-	fail.
-*/
 
 % start dfs function from all possible starting locations. 
 dfs:-

@@ -25,5 +25,6 @@ hs_err_pid*
 .vscode
 
 input.txt
+output.txt
 
 assignment1
