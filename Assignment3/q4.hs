@@ -48,19 +48,27 @@ check_valid :: [[Integer]] -> Bool
 check_valid a = (areValidLists . generateLists ) a
 
 -- Checks whether inserting k at i j will result in a valid matrix
-check_validIJ :: Int -> Int -> [[Integer]] -> Integer -> Bool
-check_validIJ i j a k = ( (elem k (a!!i)) || (elem k [ a!!x!!j | x<-[0..(len-1)]] ) || (elem k [(a!!(x*sub+w))!!(y*sub+z)| w<-[0..(sub-1)] , z<-[0..(sub-1)]]) )== False 
+-- check_validIJ :: Int -> Int -> [[Integer]] -> Integer -> Bool
+-- check_validIJ i j a k = ( (elem k (a!!i)) || (elem k [ a!!x!!j | x<-[0..(len-1)]] ) || (elem k [(a!!(x*sub+w))!!(y*sub+z)| w<-[0..(sub-1)] , z<-[0..(sub-1)]]) )== False 
+--     where len = length(a) 
+--           sub = fromInteger(floor(sqrt(realToFrac(length(a)))))
+--           x = (i `div` sub) 
+--           y = (j `div` sub)
+
+-- Gets possible values for a position using the horizontal vertical and box numbers 
+getPossibleValues :: Int -> Int -> [[Integer]] -> [Integer]
+getPossibleValues i j a = [ toInteger(q) | q <- [1..len], (Set.member (toInteger q) s)==False ]
     where len = length(a) 
           sub = fromInteger(floor(sqrt(realToFrac(length(a)))))
           x = (i `div` sub) 
           y = (j `div` sub)
+          s = Set.fromList( a!!i ++ [ a!!x!!j | x<-[0..(len-1)]] ++ [(a!!(x*sub+w))!!(y*sub+z)| w<-[0..(sub-1)] , z<-[0..(sub-1)]])
 
 {- Solves for a index i,j in the matrix first checks if matrix till now is valid if not return 
     then if we have reached the end after checking all entires are valid this is our answer so return the matrix and return True
     If the i,j entry is already filled move to the next entry and return its output
     If i,j is not filled then try filling it with the numbers once. We use the fact that haskell is lazy over here and once we get one anwer we dont look for anymore
 -}
-
 solveIndex :: Int -> Int -> [[Integer]] -> Integer -> (Bool,[[Integer]])
 solveIndex i j matrix len |
         i == 0 && j == 0 && (check_valid(matrix)==False) = (False,[]) |
@@ -69,7 +77,7 @@ solveIndex i j matrix len |
         (null q) = (False,[])|
         otherwise = q!!0 
         where 
-            q = (take 1 [  z  | x <- [1..len], (check_validIJ j i matrix x), z <- [(solveIndex ( (i+1) `mod` fromInteger(len) ) ( j + ((i+1) `div` fromInteger(len)) ) (replaceIJ matrix j i x) len )], fst(z)==True ])
+            q = (take 1 [  z  | x <- (getPossibleValues j i matrix),  z <- [(solveIndex ( (i+1) `mod` fromInteger(len) ) ( j + ((i+1) `div` fromInteger(len)) ) (replaceIJ matrix j i x) len )], fst(z)==True ])
 
 -- Converts Digit Char to Int
 digitToInt :: Char -> Int
