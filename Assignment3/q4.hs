@@ -47,6 +47,14 @@ replaceIJ m i j k = p
 check_valid :: [[Integer]] -> Bool
 check_valid a = (areValidLists . generateLists ) a
 
+-- Checks whether inserting k at i j will result in a valid matrix
+check_validIJ :: Int -> Int -> [[Integer]] -> Integer -> Bool
+check_validIJ i j a k = ( (elem k (a!!i)) || (elem k [ a!!x!!j | x<-[0..(len-1)]] ) || (elem k [(a!!(x*sub+w))!!(y*sub+z)| w<-[0..(sub-1)] , z<-[0..(sub-1)]]) )== False 
+    where len = length(a) 
+          sub = fromInteger(floor(sqrt(realToFrac(length(a)))))
+          x = (i `div` sub) 
+          y = (j `div` sub)
+
 {- Solves for a index i,j in the matrix first checks if matrix till now is valid if not return 
     then if we have reached the end after checking all entires are valid this is our answer so return the matrix and return True
     If the i,j entry is already filled move to the next entry and return its output
@@ -54,16 +62,16 @@ check_valid a = (areValidLists . generateLists ) a
 -}
 
 solveIndex :: Int -> Int -> [[Integer]] -> Integer -> (Bool,[[Integer]])
-solveIndex i j matrix len|
-        (check_valid(matrix)==False) = (False,[]) |
+solveIndex i j matrix len |
+        i == 0 && j == 0 && (check_valid(matrix)==False) = (False,[]) |
         ( j == fromInteger(len) ) = (True,matrix)  | --`debug` show(matrix)
         (matrix!!j!!i /= 0) = ( solveIndex ( (i+1) `mod` fromInteger(len) ) ( j + ((i+1) `div` fromInteger(len)) ) matrix len)  |
         (null q) = (False,[])|
         otherwise = q!!0 
         where 
-            q = (take 1 [  z  | x <- [1..len] , z <- [(solveIndex ( (i+1) `mod` fromInteger(len) ) ( j + ((i+1) `div` fromInteger(len)) ) (replaceIJ matrix j i x) len )], fst(z)==True ])
+            q = (take 1 [  z  | x <- [1..len], (check_validIJ j i matrix x), z <- [(solveIndex ( (i+1) `mod` fromInteger(len) ) ( j + ((i+1) `div` fromInteger(len)) ) (replaceIJ matrix j i x) len )], fst(z)==True ])
 
--- Covnerts Digit Char to Int
+-- Converts Digit Char to Int
 digitToInt :: Char -> Int
 digitToInt x = fromEnum(x) - fromEnum('0') 
 
@@ -81,13 +89,13 @@ inputValid x y = (length(y)==x) && (foldl (&&) True [length(z)==x | z <- y])
 
 -- Checks whether each symbol occurs only once and all the required symbols are present
 getValid :: Int -> String -> Bool
-getValid y xs = y == length( Set.fromList(xs) ) && y == length(xs) 
+getValid y xs = y == length( Set.fromList(xs) ) -- && y == length(xs) 
 
 -- solver First see if the matrix is of size 4 & 9 if no return else check for valid input matrix and solve it
 solver :: Int -> [String] -> (Bool,[String])
 solver x y |
         (x == 4 || x == 9 ) && (inputValid x y) == False = (False, ["Size mismatch."]) |
-        (x == 4 || x == 9 ) && ((getValid x ([ y!!i!!j | i <- [0..x-1] , j <- [0..x-1], y!!i!!j /=blank ]) ) ==False) = (False,["One occurence of each symbol only."])|
+        (x == 4 || x == 9 ) && ((getValid x ([ y!!i!!j | i <- [0..x-1] , j <- [0..x-1], y!!i!!j /=blank ]) ) ==False) = (False,["One occurence of each symbol atleast."])|
         (x == 4 || x == 9 ) =  (solve (toInteger(x)) y) |
         otherwise = (False,["Valid Sizes 4 & 9 Only."])
 
