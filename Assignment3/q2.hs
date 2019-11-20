@@ -1,3 +1,4 @@
+module Anagram where
 import Data.List
 
 -- Generate All Possible Substrings Also provide sorted version of them

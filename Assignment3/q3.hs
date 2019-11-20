@@ -39,5 +39,7 @@ fixture x = do
 nextMatch :: Int -> Float -> IO ()
 nextMatch z w = do
     let p = ([ x | x<-[0..5], (z,w)<=(times2!!x) ])
-    if length(p)>0 then printMatch (p!!0)
-    else print "No matches Ahead."
+    if z<1 || z>30 then putStrLn "November has dates in the range [1,30]."
+    else if (w<24.0 && w>=0.0) == False then putStrLn "Time is expected to be in range [0.0,24.0)."
+    else if length(p)>0 then printMatch (p!!0)
+    else putStrLn "No matches Ahead."
